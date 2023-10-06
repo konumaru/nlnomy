@@ -1,0 +1,19 @@
+version: '3'
+
+services:
+  streamlit_app:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    ports:
+      - "8501:8501"
+
+  doccano:
+    image: chakkiworks/doccano
+    platform: linux/amd64
+    ports:
+      - "8000:8000"
+    environment:
+      - ADMIN_USERNAME=admin
+      - ADMIN_EMAIL=admin@example.com
+      - ADMIN_PASSWORD=password
