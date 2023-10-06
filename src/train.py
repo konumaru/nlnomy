@@ -7,16 +7,13 @@ import pandas as pd
 import torch
 import torch.nn.functional as F
 from sklearn.datasets import make_multilabel_classification
-from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.multioutput import MultiOutputClassifier
 from transformers import AutoModel, AutoTokenizer
 
 
-def mean_pooling(model_output, attention_mask):
-    token_embeddings = model_output[
-        0
-    ]
+def mean_pooling(model_output, attention_mask) -> torch.Tensor:
+    token_embeddings = model_output.last_hidden_state
     input_mask_expanded = (
         attention_mask.unsqueeze(-1).expand(token_embeddings.size()).float()
     )
@@ -25,9 +22,10 @@ def mean_pooling(model_output, attention_mask):
     )
 
 
+@torch.no_grad()
 def text2embeddings(
     sentence: str, model_name_or_path: str = "roberta-base"
-) -> List[float]:
+) -> torch.Tensor:
     tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
     model = AutoModel.from_pretrained(model_name_or_path)
 
@@ -37,18 +35,11 @@ def text2embeddings(
         truncation=True,
         return_tensors="pt",
     )
-
-    with torch.no_grad():
-        model_output = model(**encoded_input)
-
-    # Perform pooling
+    model_output = model(**encoded_input)
     sentence_embeddings = mean_pooling(
         model_output, encoded_input["attention_mask"]
     )
-
-    # Normalize embeddings
     sentence_embeddings = F.normalize(sentence_embeddings, p=2, dim=1)
-
     return sentence_embeddings
 
 
