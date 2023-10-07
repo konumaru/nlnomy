@@ -12,7 +12,7 @@ def main() -> None:
 
     user_input = st.text_area("検証したい文章を入力してください")
 
-    if st.button("モデレーション"):
+    if st.button("検証する"):
         moderated_result = moderate_content(
             user_input, "./data/models/model.pkl"
         )
