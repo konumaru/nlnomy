@@ -5,12 +5,14 @@ from src.utils import load_model, moderate_content, text2embeddings
 
 
 def main() -> None:
-    if "data" not in st.session_state:
-        st.session_state.data = []
-
     st.title("Text Moderation")
 
     user_input = st.text_area("検証したい文章を入力してください")
+
+    st.session_state.data = [
+        ["底知れないカリスマ性があるよな", "Not Toxic"],
+        ["土人は怖いな", "Toxic"],
+    ]
 
     if st.button("検証する"):
         moderated_result = moderate_content(
@@ -18,11 +20,8 @@ def main() -> None:
         )
         st.session_state.data.append([user_input, moderated_result])
 
-    if user_input:
-        df = pd.DataFrame(
-            st.session_state.data, columns=["InputText", "Result"]
-        )
-        st.dataframe(df.iloc[::-1], hide_index=True, width=800, height=400)
+    df = pd.DataFrame(st.session_state.data, columns=["InputText", "Result"])
+    st.dataframe(df.iloc[::-1], hide_index=True, width=800)
 
 
 if __name__ == "__main__":

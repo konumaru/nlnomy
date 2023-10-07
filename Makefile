@@ -22,4 +22,6 @@ requirements: # Update the requirements.txt file.
 	poetry export \
 		--without-hashes \
 		--without dev \
-		-o requirements.txt 
+		-o tmp.txt 
+	cut -d';' -f1 tmp.txt > requirements.txt
+	rm tmp.txt
