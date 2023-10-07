@@ -11,7 +11,7 @@ init: # Initialize the project.
 
 .PHONY: run
 run: # Run the streamlit app.
-	poetry run streamlit run app.py
+	poetry run streamlit run streamlit_app.py
 
 .PHONY: test
 test: # Run the tests.

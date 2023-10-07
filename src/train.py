@@ -1,9 +1,8 @@
 from typing import Any, List
 
 import pandas as pd
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import SGDClassifier
 from sklearn.metrics import accuracy_score
-from sklearn.multioutput import MultiOutputClassifier
 
 from utils import save_model, text2embeddings
 
@@ -26,11 +25,12 @@ def main() -> None:
     embeddings = text2embeddings(data[col_text].tolist())
     X = embeddings
     y = data[["toxic_level"]].to_numpy()
-    clf = MultiOutputClassifier(RandomForestClassifier())
-    clf.fit(X, y)
-    save_model(clf, "./data/models/model.pkl")
 
-    preds = clf.predict(X)
+    model = SGDClassifier()
+    model.fit(X, y)
+    save_model(model, "./data/models/model.pkl")
+
+    preds = model.predict(X)
 
     acc = accuracy_score(y, preds)
     print(acc)

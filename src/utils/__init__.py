@@ -18,16 +18,6 @@ def load_model(path: str) -> Any:
     return model
 
 
-def mean_pooling(model_output, attention_mask) -> torch.Tensor:
-    token_embeddings = model_output.last_hidden_state
-    input_mask_expanded = (
-        attention_mask.unsqueeze(-1).expand(token_embeddings.size()).float()
-    )
-    return torch.sum(token_embeddings * input_mask_expanded, 1) / torch.clamp(
-        input_mask_expanded.sum(1), min=1e-9
-    )
-
-
 def moderate_content(text: str, model_path: str) -> str:
     model = load_model(model_path)
 
@@ -38,8 +28,18 @@ def moderate_content(text: str, model_path: str) -> str:
         "Very Toxic",
     ]
     embeddings = text2embeddings([text])
-    pred = model.predict(embeddings)[0][0]
+    pred = model.predict(embeddings)[0]
     return annotated_labels[pred]
+
+
+def mean_pooling(model_output, attention_mask) -> torch.Tensor:
+    token_embeddings = model_output.last_hidden_state
+    input_mask_expanded = (
+        attention_mask.unsqueeze(-1).expand(token_embeddings.size()).float()
+    )
+    return torch.sum(token_embeddings * input_mask_expanded, 1) / torch.clamp(
+        input_mask_expanded.sum(1), min=1e-9
+    )
 
 
 @torch.no_grad()
