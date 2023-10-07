@@ -12,6 +12,12 @@ def save_model(model: Any, path: str) -> None:
         pickle.dump(model, f)
 
 
+def load_model(path: str) -> Any:
+    with open(path, "rb") as f:
+        model = pickle.load(f)
+    return model
+
+
 def mean_pooling(model_output, attention_mask) -> torch.Tensor:
     token_embeddings = model_output.last_hidden_state
     input_mask_expanded = (
@@ -20,6 +26,20 @@ def mean_pooling(model_output, attention_mask) -> torch.Tensor:
     return torch.sum(token_embeddings * input_mask_expanded, 1) / torch.clamp(
         input_mask_expanded.sum(1), min=1e-9
     )
+
+
+def moderate_content(text: str, model_path: str) -> str:
+    model = load_model(model_path)
+
+    annotated_labels = [
+        "Not Toxic",
+        "Hard to Say",
+        "Toxic",
+        "Very Toxic",
+    ]
+    embeddings = text2embeddings([text])
+    pred = model.predict(embeddings)[0][0]
+    return annotated_labels[pred]
 
 
 @torch.no_grad()
