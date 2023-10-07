@@ -19,4 +19,7 @@ test: # Run the tests.
 
 .PHONY: requirements
 requirements: # Update the requirements.txt file.
-	poetry run pip freeze > requirements.txt
+	poetry export \
+		--without-hashes \
+		--without dev \
+		-o requirements.txt 
