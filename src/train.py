@@ -1,80 +1,39 @@
-import re
-import string
-from typing import List
+from typing import Any, List
 
-import numpy as np
 import pandas as pd
-import torch
-import torch.nn.functional as F
-from sklearn.datasets import make_multilabel_classification
-from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score
 from sklearn.multioutput import MultiOutputClassifier
-from transformers import AutoModel, AutoTokenizer
 
-
-def mean_pooling(model_output, attention_mask) -> torch.Tensor:
-    token_embeddings = model_output.last_hidden_state
-    input_mask_expanded = (
-        attention_mask.unsqueeze(-1).expand(token_embeddings.size()).float()
-    )
-    return torch.sum(token_embeddings * input_mask_expanded, 1) / torch.clamp(
-        input_mask_expanded.sum(1), min=1e-9
-    )
-
-
-@torch.no_grad()
-def text2embeddings(
-    sentence: str, model_name_or_path: str = "roberta-base"
-) -> torch.Tensor:
-    tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
-    model = AutoModel.from_pretrained(model_name_or_path)
-
-    encoded_input = tokenizer(
-        sentence,
-        padding=True,
-        truncation=True,
-        return_tensors="pt",
-    )
-    model_output = model(**encoded_input)
-    sentence_embeddings = mean_pooling(
-        model_output, encoded_input["attention_mask"]
-    )
-    sentence_embeddings = F.normalize(sentence_embeddings, p=2, dim=1)
-    return sentence_embeddings
+from utils import save_model, text2embeddings
 
 
 def main() -> None:
-    data = pd.read_csv(
-        "data/toxic-comment-classification-challenge/train.csv", nrows=10
+    col_text = "text"
+    cols_annotated_cnt = [
+        "Not Toxic",
+        "Hard to Say",
+        "Toxic",
+        "Very Toxic",
+    ]
+    data = pd.read_csv("data/train/subset.csv")
+    data = data.assign(
+        toxic_level=data[cols_annotated_cnt]
+        .idxmax(axis=1)
+        .map({name: i for i, name in enumerate(cols_annotated_cnt)})
     )
 
-    col_text = "comment_text"
-    cols_target = [
-        "toxic",
-        "severe_toxic",
-        "obscene",
-        "threat",
-        "insult",
-        "identity_hate",
-    ]
-    data[col_text].fillna("unknown", inplace=True)
-    data[col_text] = data[col_text].str.replace("\n", " ")
-    print(data.head())
+    embeddings = text2embeddings(data[col_text].tolist())
+    X = embeddings
+    y = data[["toxic_level"]].to_numpy()
+    clf = MultiOutputClassifier(RandomForestClassifier())
+    clf.fit(X, y)
+    save_model(clf, "./data/models/model.pkl")
 
-    input_text = data[col_text].tolist()[0]
-    print(input_text)
+    preds = clf.predict(X)
 
-    embeddings = text2embeddings(input_text)
-    print(embeddings)
-
-    # X, y = make_multilabel_classification(
-    #     n_classes=len(cols_target), random_state=0
-    # )
-    # clf = MultiOutputClassifier(LogisticRegression())
-    # clf.fit(X, y)
-
-    # preds = np.array(clf.predict_proba(X[-10:]))[:, :, 1].T
-    # print(pd.DataFrame(preds, columns=cols_target))
+    acc = accuracy_score(y, preds)
+    print(acc)
 
 
 if __name__ == "__main__":
