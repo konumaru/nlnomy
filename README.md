@@ -14,3 +14,14 @@
 
 - [nlp-waseda/roberta-base-japanese](https://huggingface.co/nlp-waseda/roberta-base-japanese)
 - [rinna/japanese-roberta-base](https://huggingface.co/rinna/japanese-roberta-base)
+
+## Workflow
+
+```mermaid
+graph LR;
+    Moderator --> id1(ModerationTool);
+    id1 -- MissDetection --> Annotator; 
+    Annotator --> id2(AnnotationTool);
+    id2 -- AnnotatedData --> id3(MLSystem);
+    id3 -- NewTrainedModel --> id1;
+```
