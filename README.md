@@ -20,7 +20,7 @@
 ```mermaid
 graph TD;
     Moderator --> id1(ModerationTool);
-    id1 -- MissDetection --> Annotator; 
+    id1 -- MissDetectionData --> Annotator; 
     Annotator --> id2(AnnotationTool);
     id2 -- AnnotatedData --> id3(MLSystem);
     id3 -- NewTrainedModel --> id1;
