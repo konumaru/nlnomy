@@ -18,7 +18,7 @@
 ## Workflow
 
 ```mermaid
-graph LR;
+graph TD;
     Moderator --> id1(ModerationTool);
     id1 -- MissDetection --> Annotator; 
     Annotator --> id2(AnnotationTool);
