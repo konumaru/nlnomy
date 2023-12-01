@@ -14,6 +14,7 @@
 
 - [nlp-waseda/roberta-base-japanese](https://huggingface.co/nlp-waseda/roberta-base-japanese)
 - [rinna/japanese-roberta-base](https://huggingface.co/rinna/japanese-roberta-base)
+- [izumi-lab/deberta-v2-base-japanese](https://huggingface.co/izumi-lab/deberta-v2-base-japanese)
 
 ## Workflow
 
